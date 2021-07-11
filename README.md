@@ -5,7 +5,7 @@ Clone the repo and build the docker image:
 
 `git clone https://github.com/irgstg/mte_docker_image.git` 
 
-`cd  mte_docker_image`
+`cd  mte-docker-image`
 
 `sudo docker build -t mte_image .`
 
