@@ -1,0 +1,86 @@
+From 6b427182da98873b7148b7b40d6ecd94758f3ad6 Mon Sep 17 00:00:00 2001
+From: R <irgstg@gmail.com>
+Date: Wed, 7 Jul 2021 14:47:57 +0300
+Subject: [PATCH 1/1] package/glibc: adding support for glibc with MTE
+
+Adding an option to configure glibc with MTE support.
+
+MTE (Memory Tagging Extension) is an ISA extension which aims to improve security on ARMv8.5-A [1].
+The linux kernel has support for that.
+In order for glibc's MTE support to work properly, user-mode support for MTE is needed by the kernel (CONFIG_ARM64_MTE).
+
+glibc version 2.33 introduced support for MTE, which is not enabled by default, and AFAIK, improvements are expected with the release of version 2.34.
+
+This config knob/option depends on:
+ BR2_TOOLCHAIN_BUILDROOT_LIBC="glibc"
+ BR2_ARCH="aarch64"
+
+The target arch must be "aarch64", MTE supported on arm64 only.
+By enabling "Install glibc support for MTE", a certain flag (--enable-memory-tagging) is set during the glibc configuration process.
+
+[1] https://community.arm.com/developer/ip-products/processors/b/processors-ip-blog/posts/enhancing-memory-safety
+
+Signed-off-by: R <irgstg@gmail.com>
+---
+ .../glibc.hash                                           | 7 +++++++
+ package/glibc/Config.in                                  | 9 +++++++++
+ package/glibc/glibc.mk                                   | 4 ++++
+ 3 files changed, 20 insertions(+)
+ create mode 100644 package/glibc/2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4/glibc.hash
+
+diff --git a/package/glibc/2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4/glibc.hash b/package/glibc/2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4/glibc.hash
+new file mode 100644
+index 0000000000..efdc24c1ec
+--- /dev/null
++++ b/package/glibc/2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4/glibc.hash
+@@ -0,0 +1,7 @@
++# Locally calculated (fetched from Github)
++sha256  71e004bc1607dcd2a2546c5a2fda39295718004f72a0ceaf05e504bec6ec3375 glibc-2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4.tar.gz 
++
++# Hashes for license files
++sha256  8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643  COPYING
++sha256  dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551  COPYING.LIB
++sha256  b33d0bd9f685b46853548814893a6135e74430d12f6d94ab3eba42fc591f83bc  LICENSES
+diff --git a/package/glibc/Config.in b/package/glibc/Config.in
+index 5ecd058145..cd1761be79 100644
+--- a/package/glibc/Config.in
++++ b/package/glibc/Config.in
+@@ -16,4 +16,13 @@ config BR2_PACKAGE_GLIBC_UTILS
+ 	  Enabling this option will compile and install the getconf,
+ 	  ldconfig, ldd and locale glibc utilities for the target.
+ 
++config BR2_PACKAGE_GLIBC_MTE
++	depends on BR2_ARCH="aarch64"
++	bool "Install glibc support for MTE"
++	help
++	  Enabling this option will configure, compile and install glibc with
++	  user-mode support for MTE (Memory Tagging Extension).
++	  Please be aware, in order for that to work, the kernel needs to support
++	  MTE in user-mode (CONFIG_ARM64_MTE), and run with supported CPU.
++
+ endif # BR2_TOOLCHAIN_BUILDROOT_GLIBC
+diff --git a/package/glibc/glibc.mk b/package/glibc/glibc.mk
+index f84f670fc0..c438715f8f 100644
+--- a/package/glibc/glibc.mk
++++ b/package/glibc/glibc.mk
+@@ -15,6 +15,9 @@ ifeq ($(BR2_RISCV_32),y)
+ # RISC-V 32-bit (RV32) requires glibc 2.33 or newer
+ # Until 2.33 is released, just use master
+ GLIBC_VERSION = 2.32.9000-69-gbd394d131c10c9ec22c6424197b79410042eed99
++else ifeq ($(BR2_PACKAGE_GLIBC_MTE),y)
++# MTE requires at least glibc 2.33
++GLIBC_VERSION = 2.33-41-g0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4 
+ else
+ GLIBC_VERSION = 2.32-37-g760e1d287825fa91d4d5a0cc921340c740d803e2
+ endif
+@@ -135,6 +138,7 @@ define GLIBC_CONFIGURE_CMDS
+ 		--disable-werror \
+ 		--without-gd \
+ 		--enable-kernel=$(call qstrip,$(BR2_TOOLCHAIN_HEADERS_AT_LEAST)) \
++		$(if $(BR2_PACKAGE_GLIBC_MTE),--enable-memory-tagging) \
+ 		--with-headers=$(STAGING_DIR)/usr/include)
+ 	$(GLIBC_ADD_MISSING_STUB_H)
+ endef
+-- 
+2.25.1
+
