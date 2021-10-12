@@ -3,7 +3,7 @@
 
 Clone the repo and build the docker image:
 
-`git clone https://github.com/irgstg/mte_docker_image.git` 
+`git clone https://github.com/irgstg/mte-docker-image.git` 
 
 `cd  mte-docker-image`
 
