@@ -9,7 +9,7 @@ Clone the repo and build the docker image:
 
 `sudo docker build -t mte_image .`
 
-### Running the container, and a sample executable
+### Running the container
 Running the container:
 
 `sudo docker run -it mte_image /bin/bash`
@@ -18,13 +18,14 @@ When inside the container, you can run QEMU:
 
 `qemu-system-aarch64 -machine virt,mte=on -cpu max -kernel $KIMAGE -hda $FSIMAGE -m 2G -display none -serial stdio -append "root=/dev/vda"`
 
-Run the basic executable, generated from `resources/main.c`:
+### Run the sample executable
+Run the sample executable, generated from `resources/main.c`:
 
 `GLIBC_TUNABLES=glibc.mem.tagging=1 /exe_name`
 
 `SIGSEGV` should be on it's way...
 
-### Debugging with gdbserver (on host)
+### Debugging with gdbserver (on host) - optional
 
 buildroot generates cross debugger, which can be attached via gdbserver.
 
