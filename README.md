@@ -1,5 +1,5 @@
 ## Instructions
-### Building the image
+### Building the docker image
 
 Clone the repo and build the docker image:
 
@@ -9,7 +9,7 @@ Clone the repo and build the docker image:
 
 `sudo docker build -t mte_image .`
 
-### Running the container and run the 
+### Running the container, and a sample executable
 Running the container:
 
 `sudo docker run -it mte_image /bin/bash`
@@ -24,7 +24,7 @@ Run the basic executable, generated from `resources/main.c`:
 
 `SIGSEGV` should be on it's way...
 
-### Debugging with GDB on host
+### Debugging with gdbserver (on host)
 
 buildroot generates cross debugger, which can be attached via gdbserver.
 
